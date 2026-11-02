@@ -1,3 +1,5 @@
+> **Intel / macOS 13+ compatibility preview:** This branch provides a separate FUSE-T app with x86_64 and arm64 builds. See the [compatibility guide](兼容版说明.md) and [validation report](兼容版验证记录.md). The upstream documentation and downloads below describe the original app.
+
 <div align="center">
 
 <img src="assets/logo.png" width="116" alt="NTFS WriteFlow" />

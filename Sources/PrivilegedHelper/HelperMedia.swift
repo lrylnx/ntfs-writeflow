@@ -3,6 +3,7 @@ import Darwin
 import DiskArbitration
 import IOKit
 
+#if !WRITEFLOW_COMPAT
 enum HelperCommand {
     static func mountInvocation(_ request: PrivilegedMountRequest, userID: UInt32, token: String) throws -> (String, [String]) {
         guard userID >= 501, userID != UInt32.max, UUID(uuidString: token)?.uuidString == token,
@@ -49,6 +50,7 @@ enum HelperCommand {
         return data
     }
 }
+#endif
 
 final class HelperMedia {
     let volume: VolumeRecord

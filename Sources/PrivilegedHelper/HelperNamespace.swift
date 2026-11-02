@@ -1,12 +1,14 @@
 import Foundation
 import Darwin
 
+#if !WRITEFLOW_COMPAT
 struct HelperTicket: Codable {
     let userID: UInt32
     let token: String
     let request: PrivilegedMountRequest
     var fileSystemIdentity: String?
 }
+#endif
 
 // 每一级目录均经描述符核验；调用方从不提供文件系统路径。
 final class HelperNamespace {
@@ -33,7 +35,7 @@ final class HelperNamespace {
                 close(parent)
                 parent = next
             }
-            let base = try Self.directory(parent: parent, name: "com.blteam.ntfsworkbench.mounts", permissions: 0o755)
+            let base = try Self.directory(parent: parent, name: URL(fileURLWithPath: PrivilegedMountConfiguration.namespace).lastPathComponent, permissions: 0o755)
             close(parent)
             parent = base
             descriptor = try Self.directory(parent: parent, name: String(userID), permissions: 0o700, allowedUser: userID)

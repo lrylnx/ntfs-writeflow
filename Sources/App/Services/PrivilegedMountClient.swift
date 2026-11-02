@@ -3,7 +3,13 @@ import ServiceManagement
 
 enum PrivilegedMountClient {
     static func requireEnabled() throws {
-        guard SMAppService.daemon(plistName: PrivilegedMountConfiguration.daemonPlistName).status == .enabled else {
+#if WRITEFLOW_COMPAT
+        let enabled = Compatibility.installedHelperBuild == (Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String)
+            && Compatibility.installedHelperBuild != nil
+#else
+        let enabled = SMAppService.daemon(plistName: PrivilegedMountConfiguration.daemonPlistName).status == .enabled
+#endif
+        guard enabled else {
             throw DiskOperationError(message: "物理磁盘挂载和安全弹出需要管理员服务。请在设置中配置并按系统提示授权。")
         }
     }
@@ -27,12 +33,26 @@ enum PrivilegedMountClient {
         }
     }
 
+#if WRITEFLOW_COMPAT
+    static func prepareUnmount(token: String, handle: FileHandle) async throws {
+        _ = try await call { service, finish in
+            service.prepareUnmount(token, handle: handle) { error in finish(Data(), error) }
+        }
+    }
+
+    static func finishUnmount(token: String) async throws {
+        _ = try await call { service, finish in
+            service.finishUnmount(token) { error in finish(Data(), error) }
+        }
+    }
+#endif
+
     static func mountedVolumes() async throws -> [PrivilegedMountResult] {
-        let data = try await call { service, finish in service.mountedVolumes(withReply: finish) }
+        let data = try await call(timeout: 10) { service, finish in service.mountedVolumes(withReply: finish) }
         return try JSONDecoder().decode([PrivilegedMountResult].self, from: data)
     }
 
-    private static func call(_ send: (PrivilegedMountProtocol, @escaping @Sendable (Data?, String?) -> Void) -> Void) async throws -> Data {
+    private static func call(timeout: TimeInterval = 90, _ send: (PrivilegedMountProtocol, @escaping @Sendable (Data?, String?) -> Void) -> Void) async throws -> Data {
         try requireEnabled()
         return try await withCheckedThrowingContinuation { continuation in
             let connection = NSXPCConnection(machServiceName: PrivilegedMountConfiguration.machServiceName, options: .privileged)
@@ -51,7 +71,7 @@ enum PrivilegedMountClient {
                 reply.finish(nil, "无法建立挂载服务连接。")
                 return
             }
-            DispatchQueue.global().asyncAfter(deadline: .now() + 90) {
+            DispatchQueue.global().asyncAfter(deadline: .now() + timeout) {
                 reply.finish(nil, "挂载服务等待超时。操作可能已提交，请刷新确认状态后再试。")
             }
             send(service) { data, error in reply.finish(data, error) }

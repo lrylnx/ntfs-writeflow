@@ -1,0 +1,8 @@
+{
+  "identity": "1DDCB3B175991894FC207A24F0B13D5C41F502B6",
+  "identityName": "TutorialQuickSend Local Signing",
+  "bundleIdentifier": "local.ntfswriteflow.compat",
+  "installPath": "~/Applications/NTFSWriteFlowCompat.app",
+  "minimumSystemVersion": "13.0",
+  "architectures": ["x86_64", "arm64"]
+}

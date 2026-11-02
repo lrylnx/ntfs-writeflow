@@ -1,3 +1,5 @@
+> **Intel / macOS 13+ 兼容预览版**：本分支使用独立的 FUSE-T 兼容应用，支持 Intel 与 Apple 芯片构建。请先阅读[兼容版说明](兼容版说明.md)和[验证记录](兼容版验证记录.md)。下方保留上游原版说明，原版下载链接不适用于兼容版。
+
 <div align="center">
 
 <img src="assets/logo.png" width="116" alt="NTFS 畅写 · NTFS WriteFlow" />
